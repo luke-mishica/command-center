@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Command Center</title>
+<style>
+:root{color-scheme:dark;--bg:#0e1220;--panel:#161b2e;--panel2:#1d2339;--line:#2a3150;--tx:#e8ebf7;--mut:#8b93b5;--ac:#8b9cff;--ac2:#ffb454;--ok:#5fd6a4;--bad:#ff7a8a}
+*{box-sizing:border-box;margin:0}
+body{font:15px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);display:flex;min-height:100vh}
+aside{width:220px;flex:none;background:var(--panel);border-right:1px solid var(--line);padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+.brand{font-weight:700;font-size:17px;padding:0 10px 18px;letter-spacing:.2px}
+.brand span{color:var(--ac)}
+nav{display:flex;flex-direction:column;gap:2px;flex:1}
+nav button{background:none;border:0;color:var(--mut);text-align:left;padding:9px 12px;border-radius:8px;font:inherit;cursor:pointer}
+nav button:hover{background:var(--panel2);color:var(--tx)}
+nav button.on{background:var(--panel2);color:var(--tx);box-shadow:inset 3px 0 var(--ac)}
+.foot{display:flex;gap:6px;padding:0 6px}
+.foot button,.foot label{flex:1;text-align:center;font-size:12px;color:var(--mut);border:1px solid var(--line);border-radius:8px;padding:6px;cursor:pointer;background:none}
+.foot button:hover,.foot label:hover{color:var(--tx)}
+main{flex:1;padding:34px 38px 60px;max-width:1120px;min-width:0}
+h1{font-size:28px;font-weight:700;margin-bottom:4px}
+h2{font-size:16px;margin-bottom:12px}
+.sub{color:var(--mut);margin-bottom:24px}
+.date{font-size:40px;font-weight:700;letter-spacing:-.5px;line-height:1.15}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-bottom:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.stat b{display:block;font-size:30px;line-height:1.1}
+.stat span{color:var(--mut);font-size:13px}
+form.add{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+input,select{background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font:inherit;min-width:0}
+input[type=text]{flex:1;min-width:160px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.btn{background:var(--ac);color:#10142a;border:0;border-radius:8px;padding:8px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn.ghost{background:var(--panel2);color:var(--tx);border:1px solid var(--line)}
+ul{list-style:none;padding:0}
+.row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.row.done .grow{text-decoration:line-through;color:var(--mut)}
+.grow{flex:1;min-width:0;overflow-wrap:anywhere}
+.tag{font-size:12px;color:var(--mut);background:var(--panel2);border-radius:20px;padding:1px 10px}
+.due{font-size:13px;color:var(--mut);white-space:nowrap}
+.due.bad{color:var(--bad)}.due.soon{color:var(--ac2)}
+.x{background:none;border:0;color:var(--mut);font-size:18px;cursor:pointer;padding:0 6px;border-radius:6px}
+.x:hover{color:var(--bad)}
+input[type=checkbox]{accent-color:var(--ac);width:17px;height:17px}
+input[type=range]{accent-color:var(--ac);flex:1;padding:0}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:20px;padding:5px 14px;font:inherit;font-size:13px;cursor:pointer}
+.chip.on{background:var(--ac);color:#10142a;border-color:var(--ac)}
+.empty{color:var(--mut);padding:10px 0}
+.center{text-align:center}
+.modes{display:flex;gap:8px;justify-content:center;margin-bottom:18px}
+.ringwrap{position:relative;width:260px;height:260px;margin:0 auto 20px}
+.ringwrap svg{width:100%;height:100%}
+.trk{fill:none;stroke:var(--panel2);stroke-width:10}
+.prg{fill:none;stroke:var(--ac);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.clock{position:absolute;inset:0;display:grid;place-items:center;font-size:54px;font-weight:700;font-variant-numeric:tabular-nums}
+.btns{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+.len{color:var(--mut);font-size:13px}
+.len input{width:64px}
+.habit{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.habit:last-child{border:0}
+.days{display:flex;gap:4px}
+.dot{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--mut);font-size:11px;cursor:pointer}
+.dot.on{background:var(--ok);border-color:var(--ok);color:#0b2a1f;font-weight:700}
+.streak{font-size:12px;color:var(--ac2);min-width:42px;text-align:right}
+.prog{display:flex;align-items:center;gap:10px;margin-top:6px}
+.prog span{font-size:13px;color:var(--mut);min-width:38px;text-align:right}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.card .top{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.card select{font-size:12px;padding:3px 6px}
+.col h2{color:var(--mut);font-size:13px;font-weight:600}
+.bar{height:8px;border-radius:8px;background:var(--panel2);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--ac)}
+.chart{width:100%;height:auto}
+.chart text{fill:var(--mut);font-size:10px}
+.chart .val{fill:var(--tx)}
+@media(max-width:760px){
+body{flex-direction:column}
+aside{position:static;width:100%;height:auto;padding:12px;border-right:0;border-bottom:1px solid var(--line)}
+.brand{padding-bottom:8px}
+nav{flex-direction:row;overflow-x:auto;flex:none}
+nav button{white-space:nowrap}
+.foot{display:none}
+main{padding:22px 16px 50px}
+.date{font-size:30px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">Command <span>Center</span></div>
+  <nav id="nav"></nav>
+  <div class="foot">
+    <button onclick="exportData()">Export</button>
+    <label>Import<input type="file" accept=".json" hidden onchange="importData(this)"></label>
+  </div>
+</aside>
+<main id="main"></main>
+
+<script>
+const KEY='command-center-v1';
+const def={tasks:[],goals:[],habits:[],projects:[],courses:[],career:[],focus:{},mins:{Focus:25,Short:5,Long:15}};
+let S;
+try{S=Object.assign({},def,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){S=Object.assign({},def)}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ds(new Date());
+const days7=()=>[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return d});
+const wd=d=>d.toLocaleDateString('en-US',{weekday:'short'});
+const TIERS=['Personal','School','Career','Project'];
+const PSTAGES=['Idea','Building','Shipped'];
+const CSTAGES=['Interested','Applied','Interview','Offer'];
+
+/* ---------- helpers ---------- */
+function dueInfo(d){
+  if(!d)return['',''];
+  const n=Math.round((new Date(d+'T00:00')-new Date(today()+'T00:00'))/864e5);
+  if(n<0)return['Overdue '+(-n)+'d','bad'];
+  if(n==0)return['Today','soon'];
+  if(n==1)return['Tomorrow','soon'];
+  if(n<8)return['In '+n+' days',''];
+  return[new Date(d+'T00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}),''];
+}
+const openTasks=cat=>S.tasks.filter(t=>!t.done&&(!cat||t.cat==cat)).sort((a,b)=>(a.due||'9')>(b.due||'9')?1:-1);
+function streak(h){let n=0,d=new Date();if(!h.log[ds(d)])d.setDate(d.getDate()-1);while(h.log[ds(d)]){n++;d.setDate(d.getDate()-1)}return n}
+const focusToday=()=>S.focus[today()]||0;
+
+/* ---------- actions ---------- */
+function add(kind,f){
+  const d=Object.fromEntries(new FormData(f));
+  if(!d.t||!d.t.trim())return false;
+  d.t=d.t.trim();d.id=uid();
+  if(kind=='tasks')d.done=false;
+  if(kind=='goals'||kind=='projects')d.p=0;
+  if(kind=='habits')d.log={};
+  S[kind].push(d);save();render();return false;
+}
+function del(kind,id){S[kind]=S[kind].filter(x=>x.id!=id);save();render()}
+function upd(kind,id,k,v){const x=S[kind].find(i=>i.id==id);if(x){x[k]=v;save()}}
+function tog(id){const t=S.tasks.find(x=>x.id==id);t.done=!t.done;t.doneOn=t.done?today():'';save();render()}
+function hab(id,d){const h=S.habits.find(x=>x.id==id);if(h.log[d])delete h.log[d];else h.log[d]=1;save();render()}
+function exportData(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));
+  a.download='command-center-backup-'+today()+'.json';a.click();
+}
+function importData(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{S=Object.assign({},def,JSON.parse(r.result));save();T.mins=S.mins;render()}catch(e){alert('That file is not a valid backup.')}};
+  r.readAsText(f);
+}
+
+/* ---------- focus timer ---------- */
+const T={mode:'Focus',mins:S.mins,left:S.mins.Focus*60,run:false,end:0,int:null};
+function paint(){
+  const total=T.mins[T.mode]*60,m=Math.floor(T.left/60),s=T.left%60;
+  const t=pad(m)+':'+pad(s);
+  const c=document.getElementById('clock'),r=document.getElementById('ring'),g=document.getElementById('go');
+  if(c)c.textContent=t;
+  if(r)r.style.strokeDashoffset=565.5*(1-T.left/total);
+  if(g)g.textContent=T.run?'Pause':(T.left<total?'Resume':'Start');
+  document.title=T.run?t+' · '+T.mode:'Command Center';
+}
+function tick(){T.left=Math.max(0,Math.ceil((T.end-Date.now())/1000));paint();if(!T.left)finish()}
+function toggleT(){
+  if(T.run){tick();clearInterval(T.int);T.run=false}
+  else{if(!T.left)T.left=T.mins[T.mode]*60;T.end=Date.now()+T.left*1000;T.run=true;T.int=setInterval(tick,250)}
+  paint();
+}
+function stopT(){clearInterval(T.int);T.run=false}
+function resetT(){stopT();T.left=T.mins[T.mode]*60;paint()}
+function mode(m){stopT();T.mode=m;T.left=T.mins[m]*60;render()}
+function setLen(v){v=Math.min(180,Math.max(1,+v||1));T.mins[T.mode]=v;S.mins=T.mins;save();stopT();T.left=v*60;render()}
+function finish(){
+  stopT();
+  if(T.mode=='Focus'){S.focus[today()]=focusToday()+T.mins.Focus;save()}
+  beep();
+  T.mode=T.mode=='Focus'?'Short':'Focus';T.left=T.mins[T.mode]*60;render();
+}
+function beep(){try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=660;g.gain.value=.15;o.start();o.stop(a.currentTime+.6)}catch(e){}}
+
+/* ---------- components ---------- */
+function taskList(cat){
+  const l=openTasks(cat);
+  if(!l.length)return'<p class="empty">Nothing open here. Add a task above.</p>';
+  return'<ul>'+l.map(taskRow).join('')+'</ul>';
+}
+function taskRow(t){
+  const[lab,cls]=dueInfo(t.due);
+  return`<li class="row ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="tog('${t.id}')" aria-label="Complete task"><span class="grow">${esc(t.t)}</span><span class="tag">${esc(t.cat)}</span><span class="due ${cls}">${lab}</span><button class="x" onclick="del('tasks','${t.id}')" aria-label="Delete task">×</button></li>`;
+}
+function bars(v,l,c){
+  const m=Math.max(...v,1),w=300/v.length;
+  return'<svg viewBox="0 0 300 130" class="chart" role="img">'+v.map((x,i)=>{
+    const h=x/m*85;
+    return`<rect x="${i*w+8}" y="${100-h}" width="${w-16}" height="${Math.max(h,1)}" rx="4" fill="${c}"/><text x="${i*w+w/2}" y="118" text-anchor="middle">${l[i]}</text><text x="${i*w+w/2}" y="${94-h}" text-anchor="middle" class="val">${x||''}</text>`;
+  }).join('')+'</svg>';
+}
+function slider(kind,x){
+  return`<div class="prog"><input type="range" min="0" max="100" step="5" value="${x.p}" oninput="upd('${kind}','${x.id}','p',+this.value);this.nextElementSibling.textContent=this.value+'%'" aria-label="Progress"><span>${x.p}%</span></div>`;
+}
+function board(kind,stages,prog){
+  return`<div class="grid">`+stages.map(st=>{
+    const items=S[kind].filter(x=>x.s==st);
+    return`<div class="col"><h2>${st} (${items.length})</h2>`+items.map(x=>`<div class="card"><div class="top"><b class="grow">${esc(x.t)}</b><select onchange="upd('${kind}','${x.id}','s',this.value);render()" aria-label="Stage">${stages.map(o=>`<option ${o==x.s?'selected':''}>${o}</option>`).join('')}</select><button class="x" onclick="del('${kind}','${x.id}')" aria-label="Delete">×</button></div>${prog?slider(kind,x):''}</div>`).join('')+`</div>`;
+  }).join('')+`</div>`;
+}
+const addForm=(kind,ph,extra='')=>`<form class="add" onsubmit="return add('${kind}',this)"><input type="text" name="t" placeholder="${ph}" aria-label="${ph}" required>${extra}<button class="btn">Add</button></form>`;
+
+/* ---------- views ---------- */
+const views={
+overview(){
+  const h=new Date().getHours(),g=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  const dt=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const hd=S.habits.filter(x=>x.log[today()]).length;
+  return`<p class="sub">${g}</p><div class="date" style="margin-bottom:26px">${dt}</div>
+  <div class="grid">
+    <div class="panel stat"><b>${openTasks().length}</b><span>Open tasks</span></div>
+    <div class="panel stat"><b style="color:var(--ac2)">${openTasks().filter(t=>t.due&&t.due<=today()).length}</b><span>Due today or overdue</span></div>
+    <div class="panel stat"><b>${focusToday()} min</b><span>Focused today</span></div>
+    <div class="panel stat"><b style="color:var(--ok)">${hd}/${S.habits.length}</b><span>Habits done today</span></div>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
+    <div class="panel"><h2>Coming up</h2>${openTasks().length?'<ul>'+openTasks().slice(0,6).map(taskRow).join('')+'</ul>':'<p class="empty">No open tasks. Add one in Tasks.</p>'}</div>
+    <div class="panel"><h2>Today's habits</h2>${S.habits.length?S.habits.map(x=>`<div class="habit"><span class="grow">${esc(x.t)}</span><button class="chip ${x.log[today()]?'on':''}" onclick="hab('${x.id}','${today()}')">${x.log[today()]?'Done':'Mark done'}</button></div>`).join(''):'<p class="empty">No habits yet. Add one in Goals &amp; habits.</p>'}</div>
+  </div>`;
+},
+tasks(){
+  const done=S.tasks.filter(t=>t.done).sort((a,b)=>(b.doneOn||'')>(a.doneOn||'')?1:-1).slice(0,8);
+  return`<h1>Tasks and deadlines</h1><p class="sub">Sorted by due date. Overdue items turn red.</p>
+  ${addForm('tasks','New task','<input type="date" name="due" aria-label="Due date"><select name="cat" aria-label="Category">'+TIERS.map(c=>`<option>${c}</option>`).join('')+'</select>')}
+  <div class="panel">${taskList()}</div>
+  ${done.length?`<div class="panel" style="margin-top:16px"><h2>Recently completed</h2><ul>${done.map(taskRow).join('')}</ul></div>`:''}`;
+},
+focus(){
+  return`<h1>Focus timer</h1><p class="sub">Completed focus sessions count toward your stats.</p>
+  <div class="panel center"><div class="modes">${Object.keys(T.mins).map(m=>`<button class="chip ${m==T.mode?'on':''}" onclick="mode('${m}')">${m}</button>`).join('')}</div>
+  <div class="ringwrap"><svg viewBox="0 0 200 200"><circle class="trk" cx="100" cy="100" r="90"/><circle id="ring" class="prg" cx="100" cy="100" r="90" stroke-dasharray="565.5" transform="rotate(-90 100 100)"/></svg><div id="clock" class="clock"></div></div>
+  <div class="btns"><button id="go" class="btn" onclick="toggleT()">Start</button><button class="btn ghost" onclick="resetT()">Reset</button></div>
+  <label class="len">${T.mode} length <input type="number" min="1" max="180" value="${T.mins[T.mode]}" onchange="setLen(this.value)"> min</label></div>
+  <p class="sub" style="margin-top:16px">Focused today: ${focusToday()} minutes</p>`;
+},
+goals(){
+  return`<h1>Goals and habits</h1><p class="sub">Slide progress on goals. Tap a day to log a habit.</p>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
+  <div><h2>Goals</h2>${addForm('goals','New goal','<input type="date" name="due" aria-label="Target date">')}
+    ${S.goals.length?S.goals.map(x=>{const[l,c]=dueInfo(x.due);return`<div class="card"><div class="top"><b class="grow">${esc(x.t)}</b><span class="due ${c}">${l}</span><button class="x" onclick="del('goals','${x.id}')" aria-label="Delete">×</button></div>${slider('goals',x)}</div>`}).join(''):'<p class="empty">Add a goal you want to reach.</p>'}</div>
+  <div><h2>Habits</h2>${addForm('habits','New habit')}
+    <div class="panel">${S.habits.length?S.habits.map(x=>`<div class="habit"><span class="grow">${esc(x.t)}</span><div class="days">${days7().map(d=>`<button class="dot ${x.log[ds(d)]?'on':''}" title="${ds(d)}" onclick="hab('${x.id}','${ds(d)}')">${wd(d)[0]}</button>`).join('')}</div><span class="streak">${streak(x)} day${streak(x)==1?'':'s'}</span><button class="x" onclick="del('habits','${x.id}')" aria-label="Delete">×</button></div>`).join(''):'<p class="empty">Add a habit to track daily.</p>'}</div></div>
+  </div>`;
+},
+projects(){
+  return`<h1>Personal projects</h1><p class="sub">Move projects from idea to shipped.</p>
+  ${addForm('projects','New project','<select name="s" aria-label="Stage">'+PSTAGES.map(c=>`<option>${c}</option>`).join('')+'</select>')}
+  ${board('projects',PSTAGES,true)}`;
+},
+school(){
+  return`<h1>School</h1><p class="sub">Courses, grades, and school deadlines.</p>
+  ${addForm('courses','Course name','<input type="number" name="g" min="0" max="100" placeholder="Grade %" aria-label="Grade percent" style="width:110px"><input type="date" name="exam" aria-label="Next exam">')}
+  <div class="grid">${S.courses.length?S.courses.map(x=>{const[l,c]=dueInfo(x.exam);return`<div class="card"><div class="top"><b class="grow">${esc(x.t)}</b><button class="x" onclick="del('courses','${x.id}')" aria-label="Delete">×</button></div><div class="bar"><i style="width:${Math.min(100,+x.g||0)}%"></i></div><div class="top" style="margin-top:8px"><span class="due">${x.g?x.g+'%':'No grade'}</span>${x.exam?`<span class="due ${c}">Exam: ${l}</span>`:''}</div></div>`}).join(''):'<p class="empty">Add your courses to track grades and exams.</p>'}</div>
+  <div class="panel"><h2>School tasks</h2>${taskList('School')}</div>`;
+},
+career(){
+  return`<h1>Career</h1><p class="sub">Track roles, applications, and next steps.</p>
+  ${addForm('career','Role or company','<select name="s" aria-label="Stage">'+CSTAGES.map(c=>`<option>${c}</option>`).join('')+'</select>')}
+  ${board('career',CSTAGES,false)}
+  <div class="panel"><h2>Career tasks</h2>${taskList('Career')}</div>`;
+},
+stats(){
+  const D=days7(),L=D.map(wd);
+  const tk=D.map(d=>S.tasks.filter(t=>t.done&&t.doneOn==ds(d)).length);
+  const fm=D.map(d=>S.focus[ds(d)]||0);
+  const hb=D.map(d=>S.habits.length?Math.round(S.habits.filter(h=>h.log[ds(d)]).length/S.habits.length*100):0);
+  const totalDone=S.tasks.filter(t=>t.done).length;
+  const rate=S.tasks.length?Math.round(totalDone/S.tasks.length*100):0;
+  const totalFocus=Object.values(S.focus).reduce((a,b)=>a+b,0);
+  const best=Math.max(0,...S.habits.map(streak));
+  return`<h1>Statistics</h1><p class="sub">The last seven days.</p>
+  <div class="grid">
+    <div class="panel stat"><b>${totalDone}</b><span>Tasks completed</span></div>
+    <div class="panel stat"><b>${rate}%</b><span>Completion rate</span></div>
+    <div class="panel stat"><b>${(totalFocus/60).toFixed(1)} h</b><span>Total focus time</span></div>
+    <div class="panel stat"><b>${best}</b><span>Best current streak (days)</span></div>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <div class="panel"><h2>Tasks completed</h2>${bars(tk,L,'#8b9cff')}</div>
+    <div class="panel"><h2>Focus minutes</h2>${bars(fm,L,'#ffb454')}</div>
+    <div class="panel"><h2>Habits completed (%)</h2>${bars(hb,L,'#5fd6a4')}</div>
+  </div>`;
+}
+};
+const NAV=[['overview','Overview'],['tasks','Tasks'],['focus','Focus timer'],['goals','Goals &amp; habits'],['projects','Projects'],['school','School'],['career','Career'],['stats','Statistics']];
+let cur='overview';
+function go(v){cur=v;try{history.replaceState(null,'','#'+v)}catch(e){}render();window.scrollTo(0,0)}
+function render(){
+  document.getElementById('nav').innerHTML=NAV.map(([k,l])=>`<button class="${k==cur?'on':''}" onclick="go('${k}')">${l}</button>`).join('');
+  document.getElementById('main').innerHTML=views[cur]();
+  paint();
+}
+const h0=location.hash.slice(1);
+if(views[h0])cur=h0;
+render();
+</script>
+</body>
+</html>
